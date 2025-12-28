@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
-import { generateTicket } from "@/lib/openrouter";
-import { GenerateTicketRequest, GenerateTicketResponse, TicketType, Section } from "@/lib/types";
+import { generateTicketWithOpenRouter } from "@/lib/openrouter";
+import { generateTicketWithGemini } from "@/lib/gemini";
+import { GenerateTicketRequest, GenerateTicketResponse, TicketType, Section, Provider } from "@/lib/types";
 import { rateLimit, getClientIdentifier } from "@/lib/rateLimit";
 import {
   validateRequestSize,
@@ -16,7 +17,7 @@ import {
 const RATE_LIMIT_REQUESTS = 10; // requests per window
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 
-// Request timeout (30 seconds)
+// Request timeout (30 seconds - allows more time for detailed responses)
 const REQUEST_TIMEOUT = 30000;
 
 export async function POST(request: NextRequest) {
@@ -113,14 +114,33 @@ export async function POST(request: NextRequest) {
     // 9. Sanitize input
     const sanitizedInput = sanitizeInput(body.input);
 
-    // 10. Generate ticket with timeout protection
+    // 10. Determine provider (check request body, then env var, then default to openrouter)
+    const defaultProvider = (process.env.DEFAULT_PROVIDER as Provider) || "openrouter";
+    const provider: Provider = body.provider || defaultProvider;
+
+    // Validate provider
+    if (provider !== "openrouter" && provider !== "gemini") {
+      return createErrorResponse(
+        "Invalid provider. Must be 'openrouter' or 'gemini'",
+        400
+      );
+    }
+
+    // 11. Generate ticket with timeout protection
     let ticket;
     try {
-      const generatePromise = generateTicket(
-        sanitizedInput,
-        body.ticketType as TicketType,
-        body.sections as Section[]
-      );
+      const generatePromise = provider === "gemini"
+        ? generateTicketWithGemini(
+            sanitizedInput,
+            body.ticketType as TicketType,
+            body.sections as Section[]
+          )
+        : generateTicketWithOpenRouter(
+            sanitizedInput,
+            body.ticketType as TicketType,
+            body.sections as Section[]
+          );
+
       const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Generation timeout")), REQUEST_TIMEOUT)
       );
@@ -131,9 +151,9 @@ export async function POST(request: NextRequest) {
         return createErrorResponse("Request timeout. Please try again.", 408);
       }
       // Don't expose internal error details
-      console.error("Error generating ticket:", error);
+      console.error(`Error generating ticket with ${provider}:`, error);
       return createErrorResponse(
-        "Failed to generate ticket. Please try again.",
+        `Failed to generate ticket with ${provider}. Please try again.`,
         500
       );
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TicketType, Section, TicketData, GenerateTicketRequest } from "@/lib/types";
+import { TicketType, Section, TicketData, GenerateTicketRequest, Provider } from "@/lib/types";
 import { InputPanel } from "@/components/InputPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
 
@@ -18,6 +18,7 @@ export default function Home() {
   const [inputText, setInputText] = useState("");
   const [ticketType, setTicketType] = useState<TicketType>("Task");
   const [selectedSections, setSelectedSections] = useState<Section[]>(DEFAULT_SECTIONS);
+  const [provider, setProvider] = useState<Provider>("openrouter");
   const [loading, setLoading] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +42,7 @@ export default function Home() {
         input: inputText,
         ticketType,
         sections: selectedSections,
+        provider,
       };
 
       const response = await fetch("/api/generate-ticket", {
@@ -83,6 +85,26 @@ export default function Home() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
           <div className="flex flex-col">
+            <div className="mb-4 bg-white rounded-xl border border-gray-200/80 p-4">
+              <label htmlFor="provider-select" className="block text-sm font-semibold text-gray-900 mb-2">
+                AI Provider
+              </label>
+              <select
+                id="provider-select"
+                value={provider}
+                onChange={(e) => setProvider(e.target.value as Provider)}
+                disabled={loading}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="openrouter">OpenRouter (Free Models)</option>
+                <option value="gemini">Google Gemini</option>
+              </select>
+              <p className="mt-2 text-xs text-gray-500">
+                {provider === "openrouter"
+                  ? "Using free models via OpenRouter"
+                  : "Using Google Gemini API"}
+              </p>
+            </div>
             <InputPanel
               inputText={inputText}
               ticketType={ticketType}
