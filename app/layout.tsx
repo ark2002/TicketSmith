@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   title: {
     default: "TicketSmith - AI Jira Ticket Generator",
     template: "%s | TicketSmith",
