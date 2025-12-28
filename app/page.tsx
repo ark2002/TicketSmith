@@ -72,17 +72,17 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-medium text-gray-900">TicketSmith</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Convert unstructured text into structured Jira tickets
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <header className="mb-10">
+          <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">TicketSmith</h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Convert unstructured text into structured Jira tickets using AI
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
             <InputPanel
               inputText={inputText}
               ticketType={ticketType}
@@ -96,7 +96,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="space-y-6">
+          <div>
             <PreviewPanel
               ticketData={ticketData}
               selectedSections={selectedSections}

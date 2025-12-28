@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "./ui/button";
 import { Copy, Check } from "lucide-react";
 
@@ -26,19 +25,19 @@ function formatValue(value: string | string[] | undefined): string {
 
 function renderFormattedContent(value: string | string[] | undefined): React.ReactNode {
   if (value === undefined || value === null) {
-    return <span className="text-gray-400 italic">Not provided</span>;
+    return <span className="text-gray-400 italic text-sm">Not provided</span>;
   }
 
   if (Array.isArray(value)) {
     if (value.length === 0) {
-      return <span className="text-gray-400 italic">Empty</span>;
+      return <span className="text-gray-400 italic text-sm">Empty</span>;
     }
     return (
-      <ul className="list-none space-y-1">
+      <ul className="list-none space-y-2.5">
         {value.map((item, index) => (
-          <li key={index} className="flex items-start">
-            <span className="mr-2 text-gray-600">•</span>
-            <span className="text-sm text-gray-800 whitespace-pre-wrap">{item}</span>
+          <li key={index} className="flex items-start group">
+            <span className="mr-3 text-gray-400 mt-0.5 flex-shrink-0">•</span>
+            <span className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed flex-1">{item}</span>
           </li>
         ))}
       </ul>
@@ -49,9 +48,9 @@ function renderFormattedContent(value: string | string[] | undefined): React.Rea
   const lines = stringValue.split("\n");
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {lines.map((line, index) => (
-        <p key={index} className="text-sm text-gray-800 whitespace-pre-wrap">
+        <p key={index} className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
           {line || "\u00A0"}
         </p>
       ))}
@@ -69,35 +68,35 @@ export function TicketSection({
   const jsonValue = JSON.stringify(value, null, 2);
 
   return (
-    <div className="border-b border-gray-200 pb-4 last:border-b-0">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-medium text-gray-700">{title}</h3>
+    <div className="border-b border-gray-100 pb-5 last:border-b-0 last:pb-0">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         <Button
           variant="ghost"
           size="sm"
           onClick={onCopy}
-          className="h-8 px-2 text-xs"
+          className="h-7 px-2.5 text-xs transition-all"
         >
           {copied ? (
             <>
-              <Check className="h-3 w-3 mr-1" />
-              Copied
+              <Check className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+              <span className="text-green-600 font-medium">Copied</span>
             </>
           ) : (
             <>
-              <Copy className="h-3 w-3 mr-1" />
+              <Copy className="h-3.5 w-3.5 mr-1.5" />
               Copy
             </>
           )}
         </Button>
       </div>
-      <div className="bg-gray-50 rounded-md p-3 min-h-[40px]">
+      <div className="bg-gray-50 rounded-lg border border-gray-100 p-4 min-h-[50px] transition-colors">
         {showRawJson ? (
-          <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-words">
+          <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-words leading-relaxed">
             {jsonValue}
           </pre>
         ) : (
-          <div className="text-sm text-gray-800">
+          <div className="text-sm text-gray-800 leading-relaxed">
             {renderFormattedContent(value)}
           </div>
         )}
