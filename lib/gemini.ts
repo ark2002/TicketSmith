@@ -7,7 +7,7 @@ import { TicketType, Section } from "./types";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
 const TEMPERATURE = parseFloat(process.env.GEMINI_TEMPERATURE || "0.3");
 const MAX_RETRIES = parseInt(process.env.GEMINI_MAX_RETRIES || "1", 10);
-const MAX_TOKENS = parseInt(process.env.GEMINI_MAX_TOKENS || "2500", 10);
+const MAX_TOKENS = parseInt(process.env.GEMINI_MAX_TOKENS || "1500", 10); // Reduced for concise output
 const API_TIMEOUT = parseInt(process.env.GEMINI_API_TIMEOUT || "30000", 10);
 
 function extractJsonFromResponse(content: string): string {
@@ -30,7 +30,11 @@ function parseJsonResponse(content: string): TicketData {
     const parsed = JSON.parse(cleaned);
     return parsed as TicketData;
   } catch (error) {
-    throw new Error(`Invalid JSON response: ${error instanceof Error ? error.message : "Unknown error"}`);
+    throw new Error(
+      `Invalid JSON response: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
   }
 }
 
@@ -59,6 +63,7 @@ async function callGemini(
     generationConfig: {
       temperature: TEMPERATURE,
       maxOutputTokens: MAX_TOKENS,
+      responseMimeType: "application/json",
     },
   };
 
@@ -100,7 +105,11 @@ async function callGemini(
     }
 
     const candidate = data.candidates[0];
-    if (!candidate.content || !candidate.content.parts || candidate.content.parts.length === 0) {
+    if (
+      !candidate.content ||
+      !candidate.content.parts ||
+      candidate.content.parts.length === 0
+    ) {
       throw new Error("Invalid response format from Gemini");
     }
 
