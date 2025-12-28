@@ -30,7 +30,11 @@ export async function POST(request: NextRequest) {
 
     // 2. Rate limiting
     const clientId = getClientIdentifier(request);
-    const rateLimitResult = rateLimit(clientId, RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW);
+    const rateLimitResult = rateLimit(
+      clientId,
+      RATE_LIMIT_REQUESTS,
+      RATE_LIMIT_WINDOW
+    );
 
     if (!rateLimitResult.success) {
       const resetDate = new Date(rateLimitResult.reset);
@@ -38,10 +42,19 @@ export async function POST(request: NextRequest) {
         "Too many requests. Please try again later.",
         429
       );
-      response.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
-      response.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
+      response.headers.set(
+        "X-RateLimit-Limit",
+        rateLimitResult.limit.toString()
+      );
+      response.headers.set(
+        "X-RateLimit-Remaining",
+        rateLimitResult.remaining.toString()
+      );
       response.headers.set("X-RateLimit-Reset", resetDate.toISOString());
-      response.headers.set("Retry-After", Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString());
+      response.headers.set(
+        "Retry-After",
+        Math.ceil((rateLimitResult.reset - Date.now()) / 1000).toString()
+      );
       return response;
     }
 
@@ -59,7 +72,10 @@ export async function POST(request: NextRequest) {
         setTimeout(() => reject(new Error("Request timeout")), REQUEST_TIMEOUT)
       );
 
-      body = (await Promise.race([bodyPromise, timeoutPromise])) as GenerateTicketRequest;
+      body = (await Promise.race([
+        bodyPromise,
+        timeoutPromise,
+      ])) as GenerateTicketRequest;
     } catch (error) {
       if (error instanceof Error && error.message === "Request timeout") {
         return createErrorResponse("Request timeout", 408);
@@ -74,7 +90,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Validate ticket type
-    if (!body.ticketType || !["Bug", "Task", "Story"].includes(body.ticketType)) {
+    if (
+      !body.ticketType ||
+      !["Bug", "Task", "Story"].includes(body.ticketType)
+    ) {
       return createErrorResponse(
         "Valid ticket type is required (Bug, Task, or Story)",
         400
@@ -84,7 +103,10 @@ export async function POST(request: NextRequest) {
     // 7. Validate sections
     const sectionsValidation = validateSections(body.sections);
     if (!sectionsValidation.valid) {
-      return createErrorResponse(sectionsValidation.error || "Invalid sections", 400);
+      return createErrorResponse(
+        sectionsValidation.error || "Invalid sections",
+        400
+      );
     }
 
     // 8. Validate section values
@@ -114,35 +136,39 @@ export async function POST(request: NextRequest) {
     // 9. Sanitize input
     const sanitizedInput = sanitizeInput(body.input);
 
-    // 10. Determine provider (check request body, then env var, then default to openrouter)
-    const defaultProvider = (process.env.DEFAULT_PROVIDER as Provider) || "openrouter";
-    const provider: Provider = body.provider || defaultProvider;
+    // 10. Determine provider from environment variable (default to openrouter)
+    const provider: Provider =
+      (process.env.DEFAULT_PROVIDER as Provider) || "openrouter";
 
     // Validate provider
     if (provider !== "openrouter" && provider !== "gemini") {
       return createErrorResponse(
-        "Invalid provider. Must be 'openrouter' or 'gemini'",
-        400
+        "Invalid provider in DEFAULT_PROVIDER env variable. Must be 'openrouter' or 'gemini'",
+        500
       );
     }
 
     // 11. Generate ticket with timeout protection
     let ticket;
     try {
-      const generatePromise = provider === "gemini"
-        ? generateTicketWithGemini(
-            sanitizedInput,
-            body.ticketType as TicketType,
-            body.sections as Section[]
-          )
-        : generateTicketWithOpenRouter(
-            sanitizedInput,
-            body.ticketType as TicketType,
-            body.sections as Section[]
-          );
+      const generatePromise =
+        provider === "gemini"
+          ? generateTicketWithGemini(
+              sanitizedInput,
+              body.ticketType as TicketType,
+              body.sections as Section[]
+            )
+          : generateTicketWithOpenRouter(
+              sanitizedInput,
+              body.ticketType as TicketType,
+              body.sections as Section[]
+            );
 
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Generation timeout")), REQUEST_TIMEOUT)
+        setTimeout(
+          () => reject(new Error("Generation timeout")),
+          REQUEST_TIMEOUT
+        )
       );
 
       ticket = await Promise.race([generatePromise, timeoutPromise]);
@@ -163,9 +189,18 @@ export async function POST(request: NextRequest) {
     };
 
     const successResponse = createSuccessResponse(response);
-    successResponse.headers.set("X-RateLimit-Limit", rateLimitResult.limit.toString());
-    successResponse.headers.set("X-RateLimit-Remaining", rateLimitResult.remaining.toString());
-    successResponse.headers.set("X-RateLimit-Reset", new Date(rateLimitResult.reset).toISOString());
+    successResponse.headers.set(
+      "X-RateLimit-Limit",
+      rateLimitResult.limit.toString()
+    );
+    successResponse.headers.set(
+      "X-RateLimit-Remaining",
+      rateLimitResult.remaining.toString()
+    );
+    successResponse.headers.set(
+      "X-RateLimit-Reset",
+      new Date(rateLimitResult.reset).toISOString()
+    );
 
     return successResponse;
   } catch (error) {

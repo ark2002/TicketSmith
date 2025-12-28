@@ -8,15 +8,13 @@ import { buildSystemPrompt, buildUserPrompt, buildRetryPrompt } from "./promptBu
 import { buildSchemaDescription } from "./schemaBuilder";
 import { TicketType, Section } from "./types";
 
-// Using free, fast models for better response times
-// Alternative free models: "qwen/qwen-2.5-7b-instruct", "mistralai/mistral-7b-instruct-v0.2"
-// Check https://openrouter.ai/models for current free models
-const PRIMARY_MODEL = "qwen/qwen-2.5-7b-instruct"; // Free, better quality than 3B models
-const FALLBACK_MODEL = "meta-llama/llama-3.2-3b-instruct"; // Free, fast fallback
-const TEMPERATURE = 0.3; // Slightly higher for more detailed responses
-const MAX_RETRIES = 1; // Reduced retries for faster failure
-const MAX_TOKENS = 2500; // Increased for more detailed responses
-const API_TIMEOUT = 30000; // 30 second timeout for API calls
+// Model configuration from environment variables
+const PRIMARY_MODEL = process.env.OPENROUTER_PRIMARY_MODEL || "qwen/qwen-2.5-7b-instruct";
+const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL || "meta-llama/llama-3.2-3b-instruct";
+const TEMPERATURE = parseFloat(process.env.OPENROUTER_TEMPERATURE || "0.3");
+const MAX_RETRIES = parseInt(process.env.OPENROUTER_MAX_RETRIES || "1", 10);
+const MAX_TOKENS = parseInt(process.env.OPENROUTER_MAX_TOKENS || "2500", 10);
+const API_TIMEOUT = parseInt(process.env.OPENROUTER_API_TIMEOUT || "30000", 10);
 
 function extractJsonFromResponse(content: string): string {
   // Remove markdown code blocks if present

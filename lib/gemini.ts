@@ -3,11 +3,12 @@ import { buildSystemPrompt, buildUserPrompt, buildRetryPrompt } from "./promptBu
 import { buildSchemaDescription } from "./schemaBuilder";
 import { TicketType, Section } from "./types";
 
-const GEMINI_MODEL = "gemini-1.5-flash"; // Fast and efficient model
-const TEMPERATURE = 0.3;
-const MAX_RETRIES = 1;
-const MAX_TOKENS = 2500;
-const API_TIMEOUT = 30000; // 30 second timeout
+// Model configuration from environment variables
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3-flash-preview";
+const TEMPERATURE = parseFloat(process.env.GEMINI_TEMPERATURE || "0.3");
+const MAX_RETRIES = parseInt(process.env.GEMINI_MAX_RETRIES || "1", 10);
+const MAX_TOKENS = parseInt(process.env.GEMINI_MAX_TOKENS || "2500", 10);
+const API_TIMEOUT = parseInt(process.env.GEMINI_API_TIMEOUT || "30000", 10);
 
 function extractJsonFromResponse(content: string): string {
   // Remove markdown code blocks if present

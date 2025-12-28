@@ -38,7 +38,6 @@ export interface GenerateTicketRequest {
   input: string;
   ticketType: TicketType;
   sections: Section[];
-  provider?: Provider; // Optional provider selection, defaults to "openrouter"
 }
 
 export interface GenerateTicketResponse {
