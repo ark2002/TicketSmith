@@ -225,7 +225,7 @@ export function PreviewPanel({
         </div>
       </div>
 
-      <div className="p-6 space-y-5 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
+      <div className="p-6 space-y-5">
         {selectedSections.map((section) => {
           const fieldName = sectionToFieldMap[section];
           const value = ticketData[fieldName];
