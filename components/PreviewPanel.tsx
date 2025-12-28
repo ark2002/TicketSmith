@@ -24,6 +24,45 @@ interface PreviewPanelProps {
   loading: boolean;
 }
 
+function formatTicketAsMarkdown(
+  ticketData: TicketData,
+  selectedSections: Section[]
+): string {
+  const lines: string[] = [];
+
+  selectedSections.forEach((section) => {
+    const fieldName = sectionToFieldMap[section];
+    const value = ticketData[fieldName];
+
+    if (value === undefined) {
+      return;
+    }
+
+    lines.push(`## ${section}`);
+    lines.push("");
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        lines.push("*Empty*");
+      } else {
+        value.forEach((item) => {
+          lines.push(`- ${item}`);
+        });
+      }
+    } else {
+      const stringValue = String(value);
+      const paragraphs = stringValue.split("\n").filter((p) => p.trim());
+      paragraphs.forEach((para) => {
+        lines.push(para);
+      });
+    }
+
+    lines.push("");
+  });
+
+  return lines.join("\n");
+}
+
 export function PreviewPanel({
   ticketData,
   selectedSections,
@@ -31,7 +70,7 @@ export function PreviewPanel({
 }: PreviewPanelProps) {
   const [showRawJson, setShowRawJson] = useState(false);
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
-  const [copiedFull, setCopiedFull] = useState(false);
+  const [copiedFormat, setCopiedFormat] = useState<"md" | "json" | null>(null);
 
   useEffect(() => {
     if (copiedSection) {
@@ -41,11 +80,11 @@ export function PreviewPanel({
   }, [copiedSection]);
 
   useEffect(() => {
-    if (copiedFull) {
-      const timer = setTimeout(() => setCopiedFull(false), 2000);
+    if (copiedFormat) {
+      const timer = setTimeout(() => setCopiedFormat(null), 2000);
       return () => clearTimeout(timer);
     }
-  }, [copiedFull]);
+  }, [copiedFormat]);
 
   const copySection = async (sectionTitle: string, value: any) => {
     try {
@@ -61,12 +100,23 @@ export function PreviewPanel({
     }
   };
 
-  const copyFullTicket = async () => {
+  const copyAsMarkdown = async () => {
+    if (!ticketData) return;
+    try {
+      const text = formatTicketAsMarkdown(ticketData, selectedSections);
+      await navigator.clipboard.writeText(text);
+      setCopiedFormat("md");
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  const copyAsJson = async () => {
     if (!ticketData) return;
     try {
       const text = JSON.stringify(ticketData, null, 2);
       await navigator.clipboard.writeText(text);
-      setCopiedFull(true);
+      setCopiedFormat("json");
     } catch (error) {
       console.error("Failed to copy:", error);
     }
@@ -121,10 +171,10 @@ export function PreviewPanel({
           <Button
             variant="secondary"
             size="sm"
-            onClick={copyFullTicket}
+            onClick={copyAsMarkdown}
             className="h-8 px-2 text-xs"
           >
-            {copiedFull ? (
+            {copiedFormat === "md" ? (
               <>
                 <Check className="h-3 w-3 mr-1" />
                 Copied
@@ -132,7 +182,25 @@ export function PreviewPanel({
             ) : (
               <>
                 <Copy className="h-3 w-3 mr-1" />
-                Copy Full
+                Copy MD
+              </>
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={copyAsJson}
+            className="h-8 px-2 text-xs"
+          >
+            {copiedFormat === "json" ? (
+              <>
+                <Check className="h-3 w-3 mr-1" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3 w-3 mr-1" />
+                Copy JSON
               </>
             )}
           </Button>
