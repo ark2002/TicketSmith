@@ -68,14 +68,14 @@ export function TicketSection({
   const jsonValue = JSON.stringify(value, null, 2);
 
   return (
-    <div className="border-b border-gray-100 pb-5 last:border-b-0 last:pb-0">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+    <div className="border-b border-gray-100/80 pb-6 last:border-b-0 last:pb-0">
+      <div className="flex items-center justify-between mb-3.5">
+        <h3 className="text-sm font-semibold text-gray-900 tracking-tight">{title}</h3>
         <Button
           variant="ghost"
           size="sm"
           onClick={onCopy}
-          className="h-7 px-2.5 text-xs transition-all"
+          className="h-7 px-2.5 text-xs transition-all hover:bg-gray-100"
         >
           {copied ? (
             <>
@@ -84,13 +84,13 @@ export function TicketSection({
             </>
           ) : (
             <>
-              <Copy className="h-3.5 w-3.5 mr-1.5" />
-              Copy
+              <Copy className="h-3.5 w-3.5 mr-1.5 text-gray-600" />
+              <span className="text-gray-600">Copy</span>
             </>
           )}
         </Button>
       </div>
-      <div className="bg-gray-50 rounded-lg border border-gray-100 p-4 min-h-[50px] transition-colors">
+      <div className="bg-gray-50/60 rounded-lg border border-gray-100/60 p-4.5 min-h-[50px] transition-colors hover:bg-gray-50/80">
         {showRawJson ? (
           <pre className="text-xs text-gray-700 font-mono whitespace-pre-wrap break-words leading-relaxed">
             {jsonValue}

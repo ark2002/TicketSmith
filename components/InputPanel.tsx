@@ -31,9 +31,9 @@ export function InputPanel({
   onGenerate,
 }: InputPanelProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-6">
+    <div className="bg-white rounded-xl border border-gray-200/80 p-7 space-y-7 h-fit">
       <div>
-        <Label htmlFor="input-text" className="mb-2.5 block text-sm font-medium text-gray-700">
+        <Label htmlFor="input-text" className="mb-3 block text-sm font-semibold text-gray-900">
           Input Text
         </Label>
         <Textarea
@@ -41,16 +41,23 @@ export function InputPanel({
           placeholder="Paste your problem statement, chat logs, or bug report here..."
           value={inputText}
           onChange={(e) => onInputChange(e.target.value)}
-          className="min-h-[240px] resize-none"
+          className="min-h-[260px] resize-none text-sm leading-relaxed"
           disabled={loading}
         />
-        <p className="mt-1.5 text-xs text-gray-500">
-          {inputText.length} characters
-        </p>
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-xs text-gray-500">
+            {inputText.length} characters
+          </p>
+          {inputText.length > 0 && (
+            <p className={`text-xs ${inputText.length < 10 ? 'text-amber-600' : 'text-gray-500'}`}>
+              {inputText.length < 10 ? `Need ${10 - inputText.length} more` : 'Ready'}
+            </p>
+          )}
+        </div>
       </div>
 
       <div>
-        <Label htmlFor="ticket-type" className="mb-2.5 block text-sm font-medium text-gray-700">
+        <Label htmlFor="ticket-type" className="mb-3 block text-sm font-semibold text-gray-900">
           Ticket Type
         </Label>
         <Select
@@ -66,7 +73,7 @@ export function InputPanel({
         </Select>
       </div>
 
-      <div className="border-t border-gray-200 pt-6">
+      <div className="border-t border-gray-100 pt-7">
         <SectionSelector
           selectedSections={selectedSections}
           onChange={onSectionsChange}
@@ -74,19 +81,24 @@ export function InputPanel({
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-3.5">
-          <p className="text-sm text-red-800 font-medium">{error}</p>
+        <div className="bg-red-50/80 border border-red-200/60 rounded-lg p-4 animate-in fade-in duration-200">
+          <div className="flex items-start">
+            <svg className="w-4 h-4 text-red-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-red-800 font-medium leading-relaxed">{error}</p>
+          </div>
         </div>
       )}
 
       <Button
         onClick={onGenerate}
         disabled={loading || inputText.trim().length < 10 || selectedSections.length === 0}
-        className="w-full h-11 text-sm font-medium"
+        className="w-full h-11 text-sm font-semibold shadow-sm hover:shadow transition-shadow"
       >
         {loading ? (
           <span className="flex items-center justify-center">
-            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin -ml-1 mr-2.5 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
