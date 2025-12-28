@@ -37,22 +37,23 @@ export function SectionSelector({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <Label className="text-sm font-medium text-gray-700 mb-2 block">
+        <Label className="text-sm font-semibold text-gray-900 mb-3.5 block">
           Sections
         </Label>
-        <div className="space-y-2">
+        <div className="space-y-2 bg-gray-50/60 rounded-lg p-3.5 border border-gray-100/60">
           {DEFAULT_SECTIONS.map((section) => (
-            <div key={section} className="flex items-center space-x-2">
+            <div key={section} className="flex items-center space-x-3 group cursor-pointer">
               <Checkbox
                 id={section}
                 checked={selectedSections.includes(section)}
-                onCheckedChange={() => handleToggle(section)}
+                onChange={() => handleToggle(section)}
+                className="transition-all"
               />
               <Label
                 htmlFor={section}
-                className="text-sm text-gray-800 cursor-pointer font-normal"
+                className="text-sm text-gray-700 cursor-pointer font-normal group-hover:text-gray-900 transition-colors flex-1 select-none"
               >
                 {section}
               </Label>
@@ -62,20 +63,21 @@ export function SectionSelector({
       </div>
       {OPTIONAL_SECTIONS.length > 0 && (
         <div>
-          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+          <Label className="text-sm font-semibold text-gray-900 mb-3.5 block">
             Optional
           </Label>
-          <div className="space-y-2">
+          <div className="space-y-2 bg-gray-50/60 rounded-lg p-3.5 border border-gray-100/60">
             {OPTIONAL_SECTIONS.map((section) => (
-              <div key={section} className="flex items-center space-x-2">
+              <div key={section} className="flex items-center space-x-3 group cursor-pointer">
                 <Checkbox
                   id={section}
                   checked={selectedSections.includes(section)}
-                  onCheckedChange={() => handleToggle(section)}
+                  onChange={() => handleToggle(section)}
+                  className="transition-all"
                 />
                 <Label
                   htmlFor={section}
-                  className="text-sm text-gray-800 cursor-pointer font-normal"
+                  className="text-sm text-gray-700 cursor-pointer font-normal group-hover:text-gray-900 transition-colors flex-1 select-none"
                 >
                   {section}
                 </Label>

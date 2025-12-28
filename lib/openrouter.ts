@@ -8,10 +8,13 @@ import { buildSystemPrompt, buildUserPrompt, buildRetryPrompt } from "./promptBu
 import { buildSchemaDescription } from "./schemaBuilder";
 import { TicketType, Section } from "./types";
 
-const PRIMARY_MODEL = "deepseek/deepseek-r1";
-const FALLBACK_MODEL = "qwen/qwen-2.5-72b-instruct";
-const TEMPERATURE = 0.2;
-const MAX_RETRIES = 2;
+// Model configuration from environment variables
+const PRIMARY_MODEL = process.env.OPENROUTER_PRIMARY_MODEL || "qwen/qwen-2.5-7b-instruct";
+const FALLBACK_MODEL = process.env.OPENROUTER_FALLBACK_MODEL || "meta-llama/llama-3.2-3b-instruct";
+const TEMPERATURE = parseFloat(process.env.OPENROUTER_TEMPERATURE || "0.3");
+const MAX_RETRIES = parseInt(process.env.OPENROUTER_MAX_RETRIES || "1", 10);
+const MAX_TOKENS = parseInt(process.env.OPENROUTER_MAX_TOKENS || "2500", 10);
+const API_TIMEOUT = parseInt(process.env.OPENROUTER_API_TIMEOUT || "30000", 10);
 
 function extractJsonFromResponse(content: string): string {
   // Remove markdown code blocks if present
@@ -52,9 +55,13 @@ async function callOpenRouter(
     model,
     messages,
     temperature: TEMPERATURE,
+    max_tokens: MAX_TOKENS,
   };
 
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -62,7 +69,10 @@ async function callOpenRouter(
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(requestBody),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -78,14 +88,16 @@ async function callOpenRouter(
     const content = data.choices[0].message.content;
     return parseJsonResponse(content);
   } catch (error) {
-    if (error instanceof Error && error.message.includes("timeout")) {
-      throw new Error("Request timeout. Please try again.");
+    if (error instanceof Error) {
+      if (error.name === "AbortError" || error.message.includes("timeout")) {
+        throw new Error("Request timeout. Please try again.");
+      }
     }
     throw error;
   }
 }
 
-export async function generateTicket(
+export async function generateTicketWithOpenRouter(
   input: string,
   ticketType: TicketType,
   sections: Section[]
@@ -100,31 +112,37 @@ export async function generateTicket(
   ];
 
   let lastError: Error | null = null;
-  let models = [PRIMARY_MODEL, FALLBACK_MODEL];
+  const models = [PRIMARY_MODEL, FALLBACK_MODEL];
 
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    for (const model of models) {
-      try {
-        // Use retry prompt after first attempt
-        if (attempt > 0) {
-          userPrompt = buildRetryPrompt(input, ticketType, sections, schema);
-          messages[messages.length - 1] = { role: "user", content: userPrompt };
+  // Try primary model first
+  for (const model of models) {
+    try {
+      const result = await callOpenRouter(model, messages, false);
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      // If it's a JSON parsing error, try retry with same model
+      if (error instanceof Error && error.message.includes("Invalid JSON")) {
+        try {
+          const retryPrompt = buildRetryPrompt(input, ticketType, sections, schema);
+          const retryMessages: OpenRouterMessage[] = [
+            { role: "system", content: messages[0].content },
+            { role: "user", content: retryPrompt },
+          ];
+          const result = await callOpenRouter(model, retryMessages, true);
+          return result;
+        } catch (retryError) {
+          // If retry fails, continue to next model
+          if (model === PRIMARY_MODEL && models.length > 1) {
+            continue; // Try fallback model
+          }
         }
+      }
 
-        const result = await callOpenRouter(model, messages, attempt > 0);
-        return result;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-
-        // If it's a JSON parsing error and we have retries left, continue
-        if (error instanceof Error && error.message.includes("Invalid JSON")) {
-          continue;
-        }
-
-        // For other errors, try next model or retry
-        if (model === PRIMARY_MODEL && models.length > 1) {
-          continue; // Try fallback model
-        }
+      // For timeout or other errors, try next model if available
+      if (model === PRIMARY_MODEL && models.length > 1) {
+        continue; // Try fallback model
       }
     }
   }

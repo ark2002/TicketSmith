@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { TicketType, Section, TicketData, GenerateTicketRequest } from "@/lib/types";
+import {
+  TicketType,
+  Section,
+  TicketData,
+  GenerateTicketRequest,
+} from "@/lib/types";
 import { InputPanel } from "@/components/InputPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
 
@@ -17,7 +22,8 @@ const DEFAULT_SECTIONS: Section[] = [
 export default function Home() {
   const [inputText, setInputText] = useState("");
   const [ticketType, setTicketType] = useState<TicketType>("Task");
-  const [selectedSections, setSelectedSections] = useState<Section[]>(DEFAULT_SECTIONS);
+  const [selectedSections, setSelectedSections] =
+    useState<Section[]>(DEFAULT_SECTIONS);
   const [loading, setLoading] = useState(false);
   const [ticketData, setTicketData] = useState<TicketData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,17 +78,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-medium text-gray-900">TicketSmith</h1>
-          <p className="text-sm text-gray-600 mt-1">
-            Convert unstructured text into structured Jira tickets
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
+        <header className="mb-12">
+          <h1 className="text-3xl font-semibold text-gray-900 tracking-tight mb-2">
+            TicketSmith
+          </h1>
+          <p className="text-sm text-gray-600">
+            Convert unstructured text into structured Jira tickets using AI
           </p>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
+          <div className="flex flex-col">
             <InputPanel
               inputText={inputText}
               ticketType={ticketType}
@@ -96,7 +104,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="space-y-6">
+          <div className="flex flex-col">
             <PreviewPanel
               ticketData={ticketData}
               selectedSections={selectedSections}

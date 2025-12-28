@@ -1,5 +1,7 @@
 export type TicketType = "Bug" | "Task" | "Story";
 
+export type Provider = "openrouter" | "gemini";
+
 export type Section =
   | "Summary"
   | "Type"
@@ -51,6 +53,7 @@ export interface OpenRouterRequest {
   model: string;
   messages: OpenRouterMessage[];
   temperature: number;
+  max_tokens?: number;
 }
 
 export interface OpenRouterResponse {
