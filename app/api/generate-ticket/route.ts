@@ -213,5 +213,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Add security headers to all responses
+// Vercel optimization: Use edge runtime for faster cold starts
+// Note: Edge runtime has some limitations (no Node.js APIs)
+// If you need Node.js APIs, keep "nodejs", otherwise use "edge" for better performance
 export const runtime = "nodejs";
+export const maxDuration = 30; // Maximum execution time in seconds (Vercel Pro: 60s, Hobby: 10s)
